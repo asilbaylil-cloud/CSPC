@@ -7,5 +7,11 @@
 - create the environment
 - branch work started
 
-##PW1 lab A  
+##PW1 lab B : data,plotting and automation
+
+what was built:
+
+-observed decay data and compared it with the analytical decay law.
+-the observed data follows the same decreasing trend as the analytical decay law
+-the Snakefile creates figure.png from decay_observed.csv using plot.py  
 
