@@ -15,3 +15,11 @@ what was built:
 -the observed data follows the same decreasing trend as the analytical decay law
 -the Snakefile creates figure.png from decay_observed.csv using plot.py  
 
+##PW2 lab A : motion from tracking data
+
+what was done :
+
+-calculated velocity and acceleration from noisy data
+-integrated acceleration to recover velocity and position
+-mean acceleration: -8.58 m/s2 standard deviation: 28.72 m/s2
+-saved the three plots as a motion.png
