@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import signal
 
 # load the seismic data
 d = pd.read_csv("PW5/data/seismogram_A.csv")
@@ -105,3 +106,107 @@ plt.title("Removed signal")
 plt.tight_layout()
 plt.savefig("PW5/removed_signal.png")
 plt.show()
+
+# envelope
+def envelope(x, window_seconds):
+    w = int(window_seconds * fs)
+    return np.convolve(np.abs(x), np.ones(w) / w, mode="same")
+
+
+# z channel with three different windows
+env_Z_005 = envelope(Z_clean, 0.05)
+env_Z_05 = envelope(Z_clean, 0.5)
+env_Z_5 = envelope(Z_clean, 5)
+
+# horizontal motion
+horizontal = np.sqrt(N_clean**2 + E_clean**2)
+env_horizontal = envelope(horizontal, 0.5)
+
+# compare the three windows
+plt.figure(figsize=(10, 5))
+plt.plot(t, env_Z_005, label="0.05 s")
+plt.plot(t, env_Z_05, label="0.5 s")
+plt.plot(t, env_Z_5, label="5 s")
+plt.plot(t, env_horizontal, label="Horizontal motion (0.5 s)")
+
+plt.xlabel("Time (s)")
+plt.ylabel("Envelope")
+plt.title("Z channel envelope")
+plt.legend()
+plt.tight_layout()
+plt.savefig("PW5/envelopes.png")
+plt.show() 
+
+# arrival times
+
+from scipy.signal import find_peaks
+
+# pwave arrival: 5% of the maximum Z envelope
+p_limit = 0.05 * np.max(env_Z_05)
+p_indices = np.where(env_Z_05 > p_limit)[0]
+tp_index = p_indices[0]
+tp = t[tp_index]
+
+# swave arrival: 10% of the maximum horizontal envelope,
+# but only after tp + 2 seconds
+s_limit = 0.10 * np.max(env_horizontal)
+s_indices = np.where((t > tp + 2) & (env_horizontal > s_limit))[0]
+ts_index = s_indices[0]
+ts = t[ts_index]
+
+# find the maximum of the horizontal envelope
+peaks, _ = find_peaks(env_horizontal)
+max_index = peaks[np.argmax(env_horizontal[peaks])]
+t_max = t[max_index]
+
+print("P-wave arrival:", tp, "s")
+print("S-wave arrival:", ts, "s")
+print("Maximum horizontal motion:", t_max, "s")
+
+# plot arrival times
+fig, axes = plt.subplots(3, 1, sharex=True, figsize=(10, 8))
+
+axes[0].plot(t, Z * 1000)
+axes[0].set_ylabel("Z (mm/s)")
+
+axes[1].plot(t, N * 1000)
+axes[1].set_ylabel("N (mm/s)")
+
+axes[2].plot(t, E * 1000)
+axes[2].set_ylabel("E (mm/s)")
+axes[2].set_xlabel("Time (s)")
+
+for ax in axes:
+    ax.axvline(tp, color="green", linestyle="--", label="P arrival")
+    ax.axvline(ts, color="red", linestyle="--", label="S arrival")
+    ax.legend()
+
+plt.tight_layout()
+plt.savefig("PW5/arrival_times.png")
+plt.show()
+
+# spectrogram of the raw Z channel
+f, ts, S = signal.spectrogram(Z, fs=fs, nperseg=256)
+
+plt.figure(figsize=(10, 5))
+plt.pcolormesh(ts, f, 10 * np.log10(S), shading="auto")
+plt.ylim(0, 10)
+
+plt.xlabel("Time (s)")
+plt.ylabel("Frequency (Hz)")
+plt.title("Spectrogram of Z channel")
+plt.colorbar(label="Power (dB)")
+
+plt.tight_layout()
+plt.savefig("PW5/spectrogram.png")
+plt.show()
+
+# magnitude calculation
+PGV = np.max(np.sqrt(N**2 + E**2)) * 100
+
+R = 306.3
+
+M = (np.log10(PGV) + np.log10(R) + 1.0) / 0.55
+
+print("PGV:", PGV, "cm/s")
+print("Magnitude:", M)

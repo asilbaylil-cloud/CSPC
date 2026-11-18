@@ -1,0 +1,14 @@
+Earthquake A
+P-wave arrival: 108.61 s
+S-wave arrival: 144.08 s
+Distance: 304.50 km
+Magnitude: 6.66
+
+Earthquake B
+P-wave arrival: 84.45 s
+S-wave arrival: 102.43 s
+Distance: 154.35 km
+Magnitude: 5.35
+
+Earthquake B was closer.
+Earthquake A had the higher magnitude.
